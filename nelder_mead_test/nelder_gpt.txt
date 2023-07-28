@@ -1,0 +1,148 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+// Definizione del tipo punto
+typedef std::vector<double> Point;
+
+// Funzione obiettivo da minimizzare (da implementare)
+double objectiveFunction(const Point& x) 
+{
+    // Inserisci qui la tua funzione obiettivo
+    // Ad esempio: return x[0]*x[0] + x[1]*x[1] + ... + x[n-1]*x[n-1];
+}
+
+// Struttura per rappresentare il simplesso
+struct Simplex 
+{
+    std::vector<Point> points;
+};
+
+// Funzione per ordinare i punti in base al valore della funzione obiettivo
+void sortSimplexPoints(Simplex& simplex) 
+{
+    std::sort(simplex.points.begin(), simplex.points.end(),
+              [](const Point& p1, const Point& p2) {
+                  return objectiveFunction(p1) < objectiveFunction(p2);
+              });
+}
+
+// Funzione per calcolare il baricentro escludendo il peggior punto
+Point computeCentroid(const Simplex& simplex) 
+{
+    Point centroid(simplex.points[0].size(), 0.0);
+    for (size_t i = 0; i < simplex.points.size() - 1; ++i) 
+	{
+        for (size_t j = 0; j < simplex.points[i].size(); ++j) 
+		{
+            centroid[j] += simplex.points[i][j];
+        }
+    }
+    const double invN = 1.0 / static_cast<double>(simplex.points.size() - 1);
+    for (size_t j = 0; j < centroid.size(); ++j) 
+	{
+        centroid[j] *= invN;
+    }
+    return centroid;
+}
+
+
+// Funzione per riflettere il peggior punto rispetto al baricentro
+Point reflect(const Simplex& simplex, const Point& centroid, double reflectionCoeff) 
+{
+    const Point& worstPoint = simplex.points.back();
+    Point reflectedPoint(centroid.size());
+    for (size_t j = 0; j < centroid.size(); ++j) 
+	{
+        reflectedPoint[j] = centroid[j] + reflectionCoeff * (centroid[j] - worstPoint[j]);
+    }
+    return reflectedPoint;
+}
+
+// Funzione per eseguire il passo di Nelder-Mead
+void nelderMeadStep(Simplex& simplex, double reflectionCoeff) {
+    sortSimplexPoints(simplex);
+    const Point& bestPoint = simplex.points[0];
+    const Point& secondWorstPoint = simplex.points[simplex.points.size() - 2];
+    const Point& worstPoint = simplex.points.back();
+    Point centroid = computeCentroid(simplex);
+
+    // Riflessione
+    Point reflectedPoint = reflect(simplex, centroid, reflectionCoeff);
+    double reflectedValue = objectiveFunction(reflectedPoint);
+
+    if (reflectedValue < objectiveFunction(bestPoint)) {
+        simplex.points.back() = reflectedPoint;
+    } else {
+        // Contrazione
+        Point contractedPoint = centroid;
+        for (size_t j = 0; j < centroid.size(); ++j) {
+            contractedPoint[j] = centroid[j] + 0.5 * (worstPoint[j] - centroid[j]);
+        }
+        double contractedValue = objectiveFunction(contractedPoint);
+
+        if (contractedValue < objectiveFunction(worstPoint)) {
+            simplex.points.back() = contractedPoint;
+        } else {
+            // Riduzione
+            for (size_t i = 1; i < simplex.points.size(); ++i) {
+                for (size_t j = 0; j < simplex.points[i].size(); ++j) {
+                    simplex.points[i][j] = 0.5 * (simplex.points[i][j] + bestPoint[j]);
+                }
+            }
+        }
+    }
+}
+
+// Funzione principale dell'algoritmo di Nelder-Mead
+Point nelderMeadOptimize(const Point& initialPoint, int maxIterations = 1000, double tol = 1e-6) {
+    const double reflectionCoeff = 1.0;
+
+    Simplex simplex;
+    simplex.points.push_back(initialPoint);
+
+    // Generazione del simplesso iniziale
+    for (size_t i = 0; i < initialPoint.size(); ++i) {
+        Point point = initialPoint;
+        point[i] += 1.0;
+        simplex.points.push_back(point);
+    }
+
+    int iteration = 0;
+    while (iteration < maxIterations) {
+        nelderMeadStep(simplex, reflectionCoeff);
+
+        // Controllo della convergenza
+        double maxDiff = 0.0;
+        for (size_t i = 0; i < simplex.points.size(); ++i) {
+            const Point& p1 = simplex.points[0];
+            const Point& p2 = simplex.points[i];
+            for (size_t j = 0; j < p1.size(); ++j) {
+                maxDiff = std::max(maxDiff, std::abs(p1[j] - p2[j]));
+            }
+        }
+
+        if (maxDiff < tol) {
+            break;
+        }
+
+        ++iteration;
+    }
+
+    return simplex.points[0];
+}
+
+int main() {
+    // Imposta il punto iniziale (ad esempio, per una funzione a 4 dimensioni)
+    Point initialPoint = {1.0, 2.0, 3.0, 4.0}; // Cambia questo punto in base alle tue esigenze
+
+    // Esegui l'ottimizzazione
+    Point result = nelderMeadOptimize(initialPoint);
+    std::cout << "Optimal point: ";
+    for (size_t i = 0; i < result.size(); ++i) {
+        std::cout << result[i] << " ";
+    }
+    std::cout << "\n";
+    return 0;
+}

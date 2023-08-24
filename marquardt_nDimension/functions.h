@@ -23,9 +23,6 @@ bool fittingMarquardt_nDimension(double* parametersMin, double* parametersMax, d
 double normGeneric_nDimension(int idFunction, double *parameters,int nrParameters, double** x, double* y, int nrData, int xDim);
 double estimateFunction_nDimension(int idFunction, double *parameters, int nrParameters, double* x, int xDim);
 void leastSquares_nDimension(int idFunction, double* parameters, int nrParameters,
-                  double** x, double* y, int nrData, int xDim, double* lambda,
-                  double* parametersDelta, double* parametersChange);
-void leastSquares_nDimension(int idFunction, double* parameters, int nrParameters,
                   double** x, double* y, int nrData,int xDim, double* lambda,
                   double* parametersDelta, double* parametersChange,bool isWeighted, double* weights);
 

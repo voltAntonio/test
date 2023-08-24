@@ -18,13 +18,16 @@ double parabolicFunction(double* x, double* par);
 double multilinear(double* x, int xDim, double* par);
 bool fittingMarquardt_nDimension(double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
                       double* parametersDelta, int maxIterationsNr, double myEpsilon, int idFunction,
-                      double** x, double* y, int nrData, int xDim);
+                      double** x, double* y, int nrData, int xDim, bool isWeighted, double *weights);
 
 double normGeneric_nDimension(int idFunction, double *parameters,int nrParameters, double** x, double* y, int nrData, int xDim);
 double estimateFunction_nDimension(int idFunction, double *parameters, int nrParameters, double* x, int xDim);
 void leastSquares_nDimension(int idFunction, double* parameters, int nrParameters,
                   double** x, double* y, int nrData, int xDim, double* lambda,
                   double* parametersDelta, double* parametersChange);
+void leastSquares_nDimension(int idFunction, double* parameters, int nrParameters,
+                  double** x, double* y, int nrData,int xDim, double* lambda,
+                  double* parametersDelta, double* parametersChange,bool isWeighted, double* weights);
 
 
 

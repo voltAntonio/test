@@ -11,9 +11,10 @@ enum estimatedFunction {FUNCTION_CODE_SPHERICAL, FUNCTION_CODE_LINEAR, FUNCTION_
                    FUNCTION_CODE_TWOPARAMETERSPOLYNOMIAL, FUNCTION_CODE_FOURIER_2_HARMONICS,
                    FUNCTION_CODE_FOURIER_GENERAL_HARMONICS,
                    FUNCTION_CODE_MODIFIED_VAN_GENUCHTEN, FUNCTION_CODE_MODIFIED_VAN_GENUCHTEN_RESTRICTED,
-                   FUNCTION_CODE_MULTILINEAR};
+                   FUNCTION_CODE_MULTILINEAR,FUNCTION_CODE_TEMPVSHEIGHT};
 
 
+double functionTemperatureVsHeight(double* x, double* par);
 double parabolicFunction(double* x, double* par);
 double multilinear(double* x, int xDim, double* par);
 bool fittingMarquardt_nDimension(double* parametersMin, double* parametersMax, double* parameters, int nrParameters,

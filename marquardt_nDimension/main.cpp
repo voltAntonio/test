@@ -6,6 +6,13 @@
 
 using namespace std;
 
+double functionTemperatureVsHeight(double* x, double* par)
+{
+    double y;
+    y = par[0] + par[1]*x[0] + par[2]*(1/(1+exp(-par[3]*(x[0] - par[4]))));
+    return y;
+}
+
 double multilinear(double* x, int xDim, double* par)
 {
     double y = 0;
@@ -245,10 +252,14 @@ double estimateFunction_nDimension(int idFunction, double *parameters, int nrPar
     switch (idFunction)
     {
         case FUNCTION_CODE_PARABOLIC :
-        return parabolicFunction(xPoint, parameters);
+            return parabolicFunction(xPoint, parameters);
 
         case FUNCTION_CODE_MULTILINEAR :
             return multilinear(xPoint,xDim,parameters);
+
+        case FUNCTION_CODE_TEMPVSHEIGHT :
+            return functionTemperatureVsHeight(xPoint,parameters);
+
         default:
             return NODATA ;
     }
@@ -285,12 +296,12 @@ double normGeneric_nDimension(int idFunction, double *parameters,int nrParameter
 
 int main()
 {
-    int nrParameters =3;
-    int nrData =5;
-    int xDim = 2;
+    int nrParameters =5;
+    int nrData =10;
+    int xDim = 1;
     int maxIterationsNr = 10000;
     double myEpsilon = EPSILON;
-    int idFunction = FUNCTION_CODE_MULTILINEAR;
+    int idFunction = FUNCTION_CODE_TEMPVSHEIGHT;
     double* parametersMin = (double *) calloc(nrParameters, sizeof(double));
     double* parametersMax = (double *) calloc(nrParameters, sizeof(double));
     double* parameters = (double *) calloc(nrParameters, sizeof(double));
@@ -307,11 +318,43 @@ int main()
 
     for (int i=0;i<nrParameters;i++)
     {
-        parametersMin[i]= -10;
-        parametersMax[i]= 10;
+        parametersMin[i]= -1000;
+        parametersMax[i]= 1000;
         parametersDelta[i] = 0.00001;
         parameters[i]= 0;
     }
+
+    parametersMin[0]= -20;
+    parametersMax[0]= 45;
+    parametersMin[1]= -0.05;
+    parametersMax[1]= 0.001;
+    parametersMin[2]= -0.01;
+    parametersMax[2]= 100;
+    parametersMin[3]= -0.01;
+    parametersMax[3]= 1;
+    parametersMin[4]= -10;
+    parametersMax[4]= 1000;
+/*
+    parametersDelta[0]= 0.01;
+    parametersDelta[1]= 0.0001;
+    parametersDelta[2]= 0.01;
+    parametersDelta[3]= 0.0001;
+    parametersDelta[4]= 0.01;
+*/
+    parameters[0]= 20;
+    parameters[1]= -0.01;
+    parameters[2]= 5;
+    parameters[3]=0.2;
+    parameters[4]= 50;
+
+    for (int i=0;i<nrParameters;i++)
+    {
+        //parameters[i] = 0.5*(parametersMin[i]+parametersMax[i]);
+        parameters[i] = parametersMin[i] + 0.5*(parametersMax[i]-parametersMin[i]);
+    }
+
+
+    /* test multilinear
     x[0][0] = 2;
     x[1][0] = 3;
     x[2][0] = 5;
@@ -328,6 +371,45 @@ int main()
     y[2] = 4;
     y[3] = 5;
     y[4] = 8;
+    */
+
+    /* test parabola
+    x[0][0] = 0;
+    x[1][0] = 1;
+    x[2][0] = 2;
+    x[3][0] = 3;
+    x[4][0] = 4;
+    y[0] = -0.;
+    y[1] = 1;
+    y[2] = 4.;
+    y[3] = 9;
+    y[4] = 16.;
+    */
+
+    x[0][0] = 0;
+    x[1][0] = 150;
+    x[2][0] = 300;
+    x[3][0] = 450;
+    x[4][0] = 600;
+    x[5][0] = 750;
+    x[6][0] = 900;
+    x[7][0] = 1050;
+    x[8][0] = 1200;
+    x[9][0] = 1350;
+
+    y[0] = 20.1;
+    y[1] = 23.5;
+    y[2] = 22.;
+    y[3] = 20.5;
+    y[4] = 19;
+    y[5] = 17.5;
+    y[6] = 16.0;
+    y[7] = 14.5;
+    y[8] = 13.;
+    y[9] = 11.5;
+
+
+
 
     fittingMarquardt_nDimension(parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
     for (int i=0;i<nrParameters;i++)
@@ -335,9 +417,18 @@ int main()
         printf("parameter %d  =  %f;\n",i,parameters[i]);
     }
     printf("\n");
-    for (int i=0;i<5;i++)
+    /*
+    parameters[0]= 20;
+    parameters[1]= -0.01;
+    parameters[2]= 5;
+    parameters[3]=0.2;
+    parameters[4]= 50;
+    */
+    for (int i=0;i<1500;i=i+100)
     {
-        //printf(" %d%f\n",i,multilinear(x[i],xDim,parameters));
+        double x;
+        x = i*1.0;
+        printf(" %f  %f\n",x,functionTemperatureVsHeight(&x,parameters));
     }
     free(x);
     free(y);

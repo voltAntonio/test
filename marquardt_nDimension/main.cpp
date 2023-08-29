@@ -1,10 +1,31 @@
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
-
+#include <time.h>
 #include "functions.h"
 
 using namespace std;
+
+double computeR2(double *obs, double* sim, int nrPoints)
+{
+    double R2=0;
+    double meanObs=0;
+    double RSS=0;
+    double TSS=0;
+    for (int i=0;i<nrPoints;i++)
+    {
+        meanObs += obs[i];
+    }
+    meanObs /= nrPoints;
+    //compute RSS and TSS
+    for (int i=0;i<nrPoints;i++)
+    {
+        RSS += (obs[i]-sim[i])*(obs[i]-sim[i]);
+        TSS += (obs[i]-meanObs)*(obs[i]-meanObs);
+    }
+    R2 = 1 - RSS/TSS;
+    return R2;
+}
 
 double functionTemperatureVsHeight(double* x, double* par)
 {
@@ -25,6 +46,62 @@ double multilinear(double* x, int xDim, double* par)
 double parabolicFunction(double* x, double* par)
 {
     return par[1]*(x[0] - par[0])*(x[0] - par[0]) + par[2] ;
+}
+
+int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
+                                      double* parametersDelta, int maxIterationsNr, double myEpsilon, int idFunction,
+                                      double** x, double* y, int nrData, int xDim,bool isWeighted, double* weights)
+{
+    int iRandom;
+    double bestR2 = -9999;
+    double R2;
+    double R2Previous[5] = {NODATA,NODATA,NODATA,NODATA,NODATA};
+    double* ySim = (double *) calloc(nrData, sizeof(double));
+    double* bestParameters = (double *) calloc(nrParameters, sizeof(double));
+    int i;
+    srand (time(nullptr));
+    for (iRandom=0;iRandom<nrTrials;iRandom++)
+    {
+        for (i=0;i<nrParameters;i++)
+        {
+            parameters[i] = parametersMin[i] + ((double) rand() / (RAND_MAX))*(parametersMax[i]-parametersMin[i]);
+        }
+        fittingMarquardt_nDimension(parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
+        for (i=0;i<nrData;i++)
+        {
+            double xSim;
+            xSim = x[i][0];
+            ySim[i]= functionTemperatureVsHeight(&xSim,parameters);
+        }
+        R2 = computeR2(y,ySim,nrData);
+        //printf("%d R2 = %f\n",iRandom,R2);
+        if (R2 > bestR2)
+        {
+            for (int j=0;j<4;j++)
+                R2Previous[j] = R2Previous[j+1];
+            R2Previous[4] = R2;
+            bestR2 = R2;
+            for (i=0;i<nrParameters;i++)
+            {
+                bestParameters[i] = parameters[i];
+            }
+            printf("%f\t%f\t%f\n",R2,R2Previous[0],R2Previous[4]);
+            if (iRandom>5 && (R2 > 1 - EPSILON || fabs(R2Previous[0]-R2Previous[4])<0.1))
+            {
+                int counter = iRandom;
+                free(bestParameters);
+                free (ySim);
+                return counter;
+            }
+        }
+    }
+    for (i=0;i<nrParameters;i++)
+    {
+        parameters[i] = bestParameters[i];
+    }
+    free(bestParameters);
+    free(ySim);
+    return iRandom;
 }
 
 bool fittingMarquardt_nDimension(double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
@@ -311,6 +388,8 @@ int main()
     double* weights = (double *) calloc(nrData, sizeof(double));
     bool isWeighted = false;
 
+
+
     for (int i=0;i<nrData;i++)
     {
         x[i] = (double *) calloc(xDim, sizeof(double));
@@ -347,11 +426,6 @@ int main()
     parameters[3]=0.2;
     parameters[4]= 50;
 
-    for (int i=0;i<nrParameters;i++)
-    {
-        //parameters[i] = 0.5*(parametersMin[i]+parametersMax[i]);
-        parameters[i] = parametersMin[i] + 0.5*(parametersMax[i]-parametersMin[i]);
-    }
 
 
     /* test multilinear
@@ -397,24 +471,22 @@ int main()
     x[8][0] = 1200;
     x[9][0] = 1350;
 
-    y[0] = 20.1;
+    y[0] = 18.1;
     y[1] = 23.5;
     y[2] = 22.;
     y[3] = 20.5;
     y[4] = 19;
-    y[5] = 17.5;
+    y[5] = 14.5;
     y[6] = 16.0;
     y[7] = 14.5;
     y[8] = 13.;
     y[9] = 11.5;
 
-
-
-
-    fittingMarquardt_nDimension(parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
+    int nrSteps = bestFittingMarquardt_nDimension(100,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
+    printf("nrSteps %d\n",nrSteps);
     for (int i=0;i<nrParameters;i++)
     {
-        printf("parameter %d  =  %f;\n",i,parameters[i]);
+        printf("%f\t",parameters[i]);
     }
     printf("\n");
     /*
@@ -424,12 +496,13 @@ int main()
     parameters[3]=0.2;
     parameters[4]= 50;
     */
-    for (int i=0;i<1500;i=i+100)
+    for (int i=0;i<1500;i=i+150)
     {
-        double x;
-        x = i*1.0;
-        printf(" %f  %f\n",x,functionTemperatureVsHeight(&x,parameters));
+        double xtry;
+        xtry = i*1.0;
+        printf(" %f  %f\n",xtry,functionTemperatureVsHeight(&xtry,parameters));
     }
+
     free(x);
     free(y);
     free(weights);

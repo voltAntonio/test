@@ -17,7 +17,7 @@ double computeR2(double *obs, double* sim, int nrPoints);
 double functionTemperatureVsHeight(double* x, double* par);
 double parabolicFunction(double* x, double* par);
 double multilinear(double* x, int xDim, double* par);
-int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
+int bestFittingMarquardt_nDimension(int nrTrials,int nrMinima,double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
                                       double* parametersDelta, int maxIterationsNr, double myEpsilon, int idFunction,
                                       double** x, double* y, int nrData, int xDim,bool isWeighted, double* weights);
 bool fittingMarquardt_nDimension(double* parametersMin, double* parametersMax, double* parameters, int nrParameters,

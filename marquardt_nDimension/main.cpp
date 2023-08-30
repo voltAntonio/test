@@ -48,18 +48,22 @@ double parabolicFunction(double* x, double* par)
     return par[1]*(x[0] - par[0])*(x[0] - par[0]) + par[2] ;
 }
 
-int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
+int bestFittingMarquardt_nDimension(int nrTrials,int nrMinima, double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
                                       double* parametersDelta, int maxIterationsNr, double myEpsilon, int idFunction,
                                       double** x, double* y, int nrData, int xDim,bool isWeighted, double* weights)
 {
     double bestR2 = -9999;
     double R2;
-    double R2Previous[5] = {NODATA,NODATA,NODATA,NODATA,NODATA};
+    double* R2Previous = (double *) calloc(nrMinima, sizeof(double));
     double* ySim = (double *) calloc(nrData, sizeof(double));
     double* bestParameters = (double *) calloc(nrParameters, sizeof(double));
     int i;
     int iRandom = 0;
     int counter = 0;
+    for (i=0; i<nrMinima; i++)
+    {
+        R2Previous[i] = NODATA;
+    }
     srand (time(nullptr));
     do
     {
@@ -78,11 +82,11 @@ int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* 
         //printf("%d R2 = %f\n",iRandom,R2);
         if (R2 > bestR2-EPSILON)
         {
-            for (int j=0;j<4;j++)
+            for (int j=0;j<nrMinima-1;j++)
             {
                 R2Previous[j] = R2Previous[j+1];
             }
-            R2Previous[4] = R2;
+            R2Previous[nrMinima-1] = R2;
             bestR2 = R2;
             for (i=0;i<nrParameters;i++)
             {
@@ -91,7 +95,7 @@ int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* 
         }
         iRandom++;
         counter++;
-    } while(iRandom<nrTrials && R2<(1 - EPSILON) && fabs(R2Previous[0]-R2Previous[4])>0.0001);
+    } while(iRandom<nrTrials && R2<(1 - EPSILON) && fabs(R2Previous[0]-R2Previous[nrMinima-1])>0.0001);
 
     for (i=0;i<nrParameters;i++)
     {
@@ -99,6 +103,7 @@ int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* 
     }
     free(bestParameters);
     free(ySim);
+    free(R2Previous);
     return counter;
 }
 
@@ -371,6 +376,7 @@ int main()
     int nrData =10;
     int xDim = 1;
     int maxIterationsNr = 10000;
+    int nrMinima = 10;
     double myEpsilon = EPSILON;
     int idFunction = FUNCTION_CODE_TEMPVSHEIGHT;
     double* parametersMin = (double *) calloc(nrParameters, sizeof(double));
@@ -476,7 +482,7 @@ int main()
     y[8] = 13.;
     y[9] = 11.5;
     int nrSteps;
-    nrSteps = bestFittingMarquardt_nDimension(maxIterationsNr,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
+    nrSteps = bestFittingMarquardt_nDimension(maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
     printf("nrSteps %d\n",nrSteps);
     for (int i=0;i<nrParameters;i++)
     {

@@ -30,8 +30,6 @@ void leastSquares_nDimension(int idFunction, double* parameters, int nrParameter
                   double** x, double* y, int nrData,int xDim, double* lambda,
                   double* parametersDelta, double* parametersChange,bool isWeighted, double* weights);
 
-double provaFunzione(double (*func)(double*, double*), double *x, double *param);
-
 int bestFittingMarquardt_nDimension(double (*func)(double*, double*),int nrTrials,int nrMinima, double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
                                       double* parametersDelta, int maxIterationsNr, double myEpsilon,
                                       double** x, double* y, int nrData, int xDim,bool isWeighted, double* weights);

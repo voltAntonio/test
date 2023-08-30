@@ -799,14 +799,11 @@ int main()
     y[9] = 11.5;
     int nrSteps;
     //nrSteps = bestFittingMarquardt_nDimension(maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
-    for (int jj=0; jj<1000; jj++)
-    {
-        nrSteps = bestFittingMarquardt_nDimension(&functionTemperatureVsHeight, maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,x,y,nrData,xDim,isWeighted,weights);
-        printf("%d nrSteps %d\n",jj,nrSteps);
-    }
+    nrSteps = bestFittingMarquardt_nDimension(&functionTemperatureVsHeight, maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,x,y,nrData,xDim,isWeighted,weights);
+
     for (int i=0;i<nrParameters;i++)
     {
-        //printf("%f\t",parameters[i]);
+        printf("%f\t",parameters[i]);
     }
     printf("\n");
     /*
@@ -831,22 +828,8 @@ int main()
     free(parametersMax);
     free(parametersMin);
 
-    //printf("Test parabola\n");
-    //double* xParabola = (double *) calloc(1, sizeof(double));
-    //double* parParabola = (double *) calloc(3, sizeof(double));;
-    //xParabola[0] = 2;
-    //parParabola[1] = 1 ;
-    //provaFunzione(&parabolicFunction,xParabola,parParabola);
-
 
     printf("The end\n");
     return 0;
 }
 
-double provaFunzione(double (*func)(double*, double*), double* x, double* param)
-{
-    double y=0;
-    //double x,param;
-    y = ((*func)(x,param));
-    return y;
-}

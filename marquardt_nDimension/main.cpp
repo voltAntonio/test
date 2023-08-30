@@ -52,15 +52,16 @@ int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* 
                                       double* parametersDelta, int maxIterationsNr, double myEpsilon, int idFunction,
                                       double** x, double* y, int nrData, int xDim,bool isWeighted, double* weights)
 {
-    int iRandom;
     double bestR2 = -9999;
     double R2;
     double R2Previous[5] = {NODATA,NODATA,NODATA,NODATA,NODATA};
     double* ySim = (double *) calloc(nrData, sizeof(double));
     double* bestParameters = (double *) calloc(nrParameters, sizeof(double));
     int i;
+    int iRandom = 0;
+    int counter = 0;
     srand (time(nullptr));
-    for (iRandom=0;iRandom<nrTrials;iRandom++)
+    do
     {
         for (i=0;i<nrParameters;i++)
         {
@@ -71,37 +72,34 @@ int bestFittingMarquardt_nDimension(int nrTrials,double* parametersMin, double* 
         {
             double xSim;
             xSim = x[i][0];
-            ySim[i]= functionTemperatureVsHeight(&xSim,parameters);
+            ySim[i]= functionTemperatureVsHeight(&xSim,parameters); // TODO to be generalized!!
         }
         R2 = computeR2(y,ySim,nrData);
         //printf("%d R2 = %f\n",iRandom,R2);
-        if (R2 > bestR2)
+        if (R2 > bestR2-EPSILON)
         {
             for (int j=0;j<4;j++)
+            {
                 R2Previous[j] = R2Previous[j+1];
+            }
             R2Previous[4] = R2;
             bestR2 = R2;
             for (i=0;i<nrParameters;i++)
             {
                 bestParameters[i] = parameters[i];
             }
-            printf("%f\t%f\t%f\n",R2,R2Previous[0],R2Previous[4]);
-            if (iRandom>5 && (R2 > 1 - EPSILON || fabs(R2Previous[0]-R2Previous[4])<0.1))
-            {
-                int counter = iRandom;
-                free(bestParameters);
-                free (ySim);
-                return counter;
-            }
         }
-    }
+        iRandom++;
+        counter++;
+    } while(iRandom<nrTrials && R2<(1 - EPSILON) && fabs(R2Previous[0]-R2Previous[4])>0.0001);
+
     for (i=0;i<nrParameters;i++)
     {
         parameters[i] = bestParameters[i];
     }
     free(bestParameters);
     free(ySim);
-    return iRandom;
+    return counter;
 }
 
 bool fittingMarquardt_nDimension(double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
@@ -367,10 +365,6 @@ double normGeneric_nDimension(int idFunction, double *parameters,int nrParameter
     return norm;
 }
 
-
-
-
-
 int main()
 {
     int nrParameters =5;
@@ -481,12 +475,12 @@ int main()
     y[7] = 14.5;
     y[8] = 13.;
     y[9] = 11.5;
-
-    int nrSteps = bestFittingMarquardt_nDimension(100,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
+    int nrSteps;
+    nrSteps = bestFittingMarquardt_nDimension(maxIterationsNr,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
     printf("nrSteps %d\n",nrSteps);
     for (int i=0;i<nrParameters;i++)
     {
-        printf("%f\t",parameters[i]);
+        //printf("%f\t",parameters[i]);
     }
     printf("\n");
     /*

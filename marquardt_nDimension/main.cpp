@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include "functions.h"
-
+#include "../agrolib/mathFunctions/furtherMathFunctions.h"
+#include "../agrolib/mathFunctions/commonConstants.h"
 using namespace std;
 
 double computeR2(double *obs, double* sim, int nrPoints)

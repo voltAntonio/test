@@ -1,6 +1,6 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
-
+/*
 #define NODATA -9999
 #define EPSILON 0.00001
 #define MINVALUE(a, b) (((a) < (b))? (a) : (b))
@@ -12,7 +12,7 @@ enum estimatedFunction {FUNCTION_CODE_SPHERICAL, FUNCTION_CODE_LINEAR, FUNCTION_
                    FUNCTION_CODE_FOURIER_GENERAL_HARMONICS,
                    FUNCTION_CODE_MODIFIED_VAN_GENUCHTEN, FUNCTION_CODE_MODIFIED_VAN_GENUCHTEN_RESTRICTED,
                    FUNCTION_CODE_MULTILINEAR,FUNCTION_CODE_TEMPVSHEIGHT};
-
+*/
 double computeR2(double *obs, double* sim, int nrPoints);
 double functionTemperatureVsHeight(double* x, double* par);
 double parabolicFunction(double* x, double* par);

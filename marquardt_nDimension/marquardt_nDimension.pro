@@ -10,7 +10,7 @@ HEADERS += \
     functions.h
 
 
-INCLUDEPATH += ../mathFunctions
+INCLUDEPATH += ../agrolib/mathFunctions
 
 SUBDIRS = ../agrolib/mathFunctions
 

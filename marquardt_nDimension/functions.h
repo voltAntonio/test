@@ -12,11 +12,12 @@ enum estimatedFunction {FUNCTION_CODE_SPHERICAL, FUNCTION_CODE_LINEAR, FUNCTION_
                    FUNCTION_CODE_FOURIER_GENERAL_HARMONICS,
                    FUNCTION_CODE_MODIFIED_VAN_GENUCHTEN, FUNCTION_CODE_MODIFIED_VAN_GENUCHTEN_RESTRICTED,
                    FUNCTION_CODE_MULTILINEAR,FUNCTION_CODE_TEMPVSHEIGHT};
-*/
+
 double computeR2(double *obs, double* sim, int nrPoints);
 double functionTemperatureVsHeight(double* x, double* par);
 double parabolicFunction(double* x, double* par);
 double multilinear(double* x, int xDim, double* par);
+double bilinear(double* x, double* par);
 int bestFittingMarquardt_nDimension(int nrTrials,int nrMinima,double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
                                       double* parametersDelta, int maxIterationsNr, double myEpsilon, int idFunction,
                                       double** x, double* y, int nrData, int xDim,bool isWeighted, double* weights);
@@ -38,8 +39,8 @@ bool fittingMarquardt_nDimension(double (*func)(double *, double *), double* par
                       double** x, double* y, int nrData, int xDim, bool isWeighted, double *weights);
 
 double normGeneric_nDimension(double (*func)(double *, double *), double *parameters,int nrParameters, double** x, double* y, int nrData, int xDim);
-//double estimateFunction_nDimensionExternalFunction(double (*func)(double *, double *), double *parameters, int nrParameters, double* x, int xDim);
 void leastSquares_nDimension(double (*func)(double *, double *), double* parameters, int nrParameters,
                   double** x, double* y, int nrData,int xDim, double* lambda,
                   double* parametersDelta, double* parametersChange,bool isWeighted, double* weights);
+*/
 #endif // FUNCTIONS_H

@@ -2,11 +2,12 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include "functions.h"
-#include "../agrolib/mathFunctions/furtherMathFunctions.h"
-#include "../agrolib/mathFunctions/commonConstants.h"
-using namespace std;
+//#include "functions.h"
+#include "furtherMathFunctions.h"
+#include "commonConstants.h"
 
+using namespace std;
+/*
 double computeR2(double *obs, double* sim, int nrPoints)
 {
     double R2=0;
@@ -32,6 +33,14 @@ double functionTemperatureVsHeight(double* x, double* par)
 {
     double y;
     y = par[0] + par[1]*x[0] + par[2]*(1/(1+exp(-par[3]*(x[0] - par[4]))));
+    return y;
+}
+double bilinear(double* x, double* par)
+{
+    double y = 0;
+    for (int i=0;i<2;i++)
+        y += par[i] * x[i];
+    y += par[2];
     return y;
 }
 
@@ -361,7 +370,7 @@ double normGeneric_nDimension(double (*func)(double*, double*), double *paramete
 /* ////////////////////////////////////////////////////////////////// */
 /* ////////////////////////////////////////////////////////////////// */
 /* ////////////////////////////////////////////////////////////////// */
-
+/*
 int bestFittingMarquardt_nDimension(int nrTrials,int nrMinima, double* parametersMin, double* parametersMax, double* parameters, int nrParameters,
                                       double* parametersDelta, int maxIterationsNr, double myEpsilon, int idFunction,
                                       double** x, double* y, int nrData, int xDim,bool isWeighted, double* weights)
@@ -386,16 +395,16 @@ int bestFittingMarquardt_nDimension(int nrTrials,int nrMinima, double* parameter
         {
             parameters[i] = parametersMin[i] + ((double) rand() / (RAND_MAX))*(parametersMax[i]-parametersMin[i]);
         }
-        fittingMarquardt_nDimension(parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
+        interpolation::fittingMarquardt_nDimension(parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
         for (i=0;i<nrData;i++)
         {
             for (int k=0; k<xDim; k++)
             {
                 xPoint[k] = x[i][k];
             }
-            ySim[i]= estimateFunction_nDimension(idFunction,parameters,nrParameters,xPoint,xDim);
+            ySim[i]= interpolation::estimateFunction_nDimension(idFunction,parameters,nrParameters,xPoint,xDim);
         }
-        R2 = computeR2(y,ySim,nrData);
+        R2 = interpolation::computeR2(y,ySim,nrData);
         if (R2 > bestR2-EPSILON)
         {
             for (int j=0;j<nrMinima-1;j++)
@@ -442,12 +451,12 @@ bool fittingMarquardt_nDimension(double* parametersMin, double* parametersMax, d
         paramChange[i] = 0;
     }
 
-    mySSE = normGeneric_nDimension(idFunction, parameters, nrParameters, x, y, nrData,xDim);
+    mySSE = interpolation::normGeneric_nDimension(idFunction, parameters, nrParameters, x, y, nrData,xDim);
 
     int iterationNr = 0;
     do
     {
-        leastSquares_nDimension(idFunction, parameters, nrParameters, x, y, nrData,xDim, lambda, parametersDelta, paramChange,isWeighted,weights);
+        interpolation::leastSquares_nDimension(idFunction, parameters, nrParameters, x, y, nrData,xDim, lambda, parametersDelta, paramChange,isWeighted,weights);
             // change parameters
         for (int i = 0; i < nrParameters; i++)
         {
@@ -686,16 +695,16 @@ double normGeneric_nDimension(int idFunction, double *parameters,int nrParameter
     free(xPoint);
     return norm;
 }
-
+*/
 int main()
 {
-    int nrParameters =5;
-    int nrData =10;
-    int xDim = 1;
-    int maxIterationsNr = 10000;
-    int nrMinima = 10;
+    int nrParameters =3; // to be parameterized
+    int nrData =5; // to be parameterized
+    int xDim = 2; // to be parameterized
+    int maxIterationsNr = 10000; // to be parameterized
+    int nrMinima = 10; // to be parameterized
     double myEpsilon = EPSILON;
-    int idFunction = FUNCTION_CODE_TEMPVSHEIGHT;
+    //int idFunction = FUNCTION_CODE_TEMPVSHEIGHT;
     double* parametersMin = (double *) calloc(nrParameters, sizeof(double));
     double* parametersMax = (double *) calloc(nrParameters, sizeof(double));
     double* parameters = (double *) calloc(nrParameters, sizeof(double));
@@ -720,32 +729,10 @@ int main()
         parameters[i]= 0;
     }
 
-    parametersMin[0]= -20;
-    parametersMax[0]= 45;
-    parametersMin[1]= -0.05;
-    parametersMax[1]= 0.001;
-    parametersMin[2]= -0.01;
-    parametersMax[2]= 100;
-    parametersMin[3]= -0.01;
-    parametersMax[3]= 1;
-    parametersMin[4]= -10;
-    parametersMax[4]= 1000;
-/*
-    parametersDelta[0]= 0.01;
-    parametersDelta[1]= 0.0001;
-    parametersDelta[2]= 0.01;
-    parametersDelta[3]= 0.0001;
-    parametersDelta[4]= 0.01;
-*/
-    parameters[0]= 20;
-    parameters[1]= -0.01;
-    parameters[2]= 5;
-    parameters[3]=0.2;
-    parameters[4]= 50;
 
 
 
-    /* test multilinear
+    //test multilinear
     x[0][0] = 2;
     x[1][0] = 3;
     x[2][0] = 5;
@@ -762,21 +749,8 @@ int main()
     y[2] = 4;
     y[3] = 5;
     y[4] = 8;
-    */
 
-    /* test parabola
-    x[0][0] = 0;
-    x[1][0] = 1;
-    x[2][0] = 2;
-    x[3][0] = 3;
-    x[4][0] = 4;
-    y[0] = -0.;
-    y[1] = 1;
-    y[2] = 4.;
-    y[3] = 9;
-    y[4] = 16.;
-    */
-
+    /* test tempVsHeight
     x[0][0] = 0;
     x[1][0] = 150;
     x[2][0] = 300;
@@ -798,27 +772,26 @@ int main()
     y[7] = 14.5;
     y[8] = 13.;
     y[9] = 11.5;
+
+
+    parametersMin[0]= -20;
+    parametersMax[0]= 45;
+    parametersMin[1]= -0.05;
+    parametersMax[1]= 0.001;
+    parametersMin[2]= -0.01;
+    parametersMax[2]= 100;
+    parametersMin[3]= -0.01;
+    parametersMax[3]= 1;
+    parametersMin[4]= -10;
+    parametersMax[4]= 1000;*/
+
     int nrSteps;
-    //nrSteps = bestFittingMarquardt_nDimension(maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
-    nrSteps = bestFittingMarquardt_nDimension(&functionTemperatureVsHeight, maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,x,y,nrData,xDim,isWeighted,weights);
+    //nrSteps = interpolation::bestFittingMarquardt_nDimension(maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
+    nrSteps = interpolation::bestFittingMarquardt_nDimension(&bilinear, maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,x,y,nrData,xDim,isWeighted,weights);
 
     for (int i=0;i<nrParameters;i++)
     {
         printf("%f\t",parameters[i]);
-    }
-    printf("\n");
-    /*
-    parameters[0]= 20;
-    parameters[1]= -0.01;
-    parameters[2]= 5;
-    parameters[3]=0.2;
-    parameters[4]= 50;
-    */
-    for (int i=0;i<1500;i=i+150)
-    {
-        double xtry;
-        xtry = i*1.0;
-        printf(" %f  %f\n",xtry,functionTemperatureVsHeight(&xtry,parameters));
     }
 
     free(x);

@@ -788,7 +788,7 @@ int main()
     int nrSteps;
     //nrSteps = interpolation::bestFittingMarquardt_nDimension(maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,idFunction,x,y,nrData,xDim,isWeighted,weights);
     nrSteps = interpolation::bestFittingMarquardt_nDimension(&bilinear, maxIterationsNr,nrMinima,parametersMin,parametersMax,parameters,nrParameters,parametersDelta,maxIterationsNr,myEpsilon,x,y,nrData,xDim,isWeighted,weights);
-
+    //
     for (int i=0;i<nrParameters;i++)
     {
         printf("%f\t",parameters[i]);
